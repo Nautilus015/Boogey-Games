@@ -637,16 +637,6 @@ button { cursor: pointer; font-family: var(--font-body); }
 .modal-btn#modal-fullscreen { color: var(--muted); }
 .modal-btn#modal-fullscreen:hover { color: var(--green); }
 .modal-body { flex: 1; overflow: hidden; }
-.iframe-wrap {
-    width: 100%; height: 100%;
-    min-height: 450px; position: relative;
-}
-.iframe-wrap iframe {
-    width: 100%; height: 100%;
-    border: none; display: block;
-    min-height: 450px;
-}
-
 /* Iframe fills its container */
 .iframe-wrap {
     width: 100%; height: 100%;
@@ -659,14 +649,30 @@ button { cursor: pointer; font-family: var(--font-body); }
     min-height: 450px;
 }
 
-/* When the iframe itself is fullscreen — fills the whole screen natively */
-iframe:fullscreen,
-iframe:-webkit-full-screen,
-iframe:-moz-full-screen {
+/* When the modal is fullscreen — fill the whole screen */
+.modal:fullscreen,
+.modal:-webkit-full-screen,
+.modal:-moz-full-screen {
+    max-width: 100vw !important;
+    max-height: 100vh !important;
     width: 100vw !important;
     height: 100vh !important;
-    min-height: 100vh !important;
+    border-radius: 0 !important;
     border: none !important;
+    transform: translateY(0) scale(1) !important;
+    margin: 0 !important;
+}
+/* Hide the header and modal wrapper chrome in fullscreen so game is pure fullscreen */
+.modal:fullscreen .modal-header,
+.modal:-webkit-full-screen .modal-header,
+.modal:-moz-full-screen .modal-header {
+    display: none !important;
+}
+.modal:fullscreen .iframe-wrap,
+.modal:-webkit-full-screen .iframe-wrap,
+.modal:-moz-full-screen .iframe-wrap {
+    height: 100vh !important;
+    min-height: 100vh !important;
 }
 
 /* ============================

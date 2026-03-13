@@ -267,10 +267,12 @@ function openModal(game) {
     // Use the embed string if it contains valid iframe, else build from gameURL
     let iframeSrc = game.gameURL || '';
 
-    // Inject iframe
+    // Inject iframe with forced inline styles to ensure it fills the wrapper
+    // The wrapper itself is what will trigger fullscreen mode
     iframeWrap.innerHTML = `
         <iframe
             src="${iframeSrc}"
+            style="width: 100%; height: 100%; min-height: 100%; border: none; display: block;"
             allow="fullscreen; accelerometer; camera; clipboard-read; clipboard-write; screen-wake-lock; speaker-selection; web-share; geolocation; gyroscope; microphone; xr-spatial-tracking; autoplay; encrypted-media; picture-in-picture; payment; publickey-credentials-get; publickey-credentials-create; storage-access; attribution-reporting; browsing-topics"
             frameborder="0"
             allowfullscreen
@@ -289,14 +291,14 @@ function toggleFullscreen() {
     const shrinkIcon = document.getElementById('fs-shrink-icon');
 
     if (!document.fullscreenElement) {
-        // Target the iframe directly so only the game fills the screen
-        const iframe = document.querySelector('#iframe-wrap iframe');
-        if (!iframe) return;
-        const req = iframe.requestFullscreen ||
-                    iframe.webkitRequestFullscreen ||
-                    iframe.mozRequestFullScreen ||
-                    iframe.msRequestFullscreen;
-        if (req) req.call(iframe);
+        // Target the modal container so CSS can hide the header and expand the iframe
+        const wrap = document.querySelector('#play-modal .modal');
+        if (!wrap) return;
+        const req = wrap.requestFullscreen ||
+                    wrap.webkitRequestFullscreen ||
+                    wrap.mozRequestFullScreen ||
+                    wrap.msRequestFullscreen;
+        if (req) req.call(wrap);
     } else {
         const exit = document.exitFullscreen ||
                      document.webkitExitFullscreen ||
