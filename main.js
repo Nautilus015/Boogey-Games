@@ -1,46 +1,367 @@
-/* --- Scroll Header Shadow --- */
-function scrollHeader() {
-    const header = document.getElementById('header');
-    if (this.scrollY >= 50) header.classList.add('scroll-header'); else header.classList.remove('scroll-header');
+/* ============================
+   BOOGEY GAMES - main.js
+   Dynamic Playgama Catalog
+   ============================ */
+
+const GAMES_PER_PAGE = 24;
+const GENRE_LIMIT = 15; // Number of genre filters to show
+
+let allGames = [];
+let filteredGames = [];
+let currentPage = 1;
+let currentGenre = 'all';
+let searchQuery = '';
+
+/* ============================
+   HELPERS
+   ============================ */
+function truncate(str, max) {
+    if (!str) return '';
+    return str.length > max ? str.slice(0, max).trim() + '…' : str;
 }
-window.addEventListener('scroll', scrollHeader);
 
-/* --- Active Link Highlight --- */
-const sections = document.querySelectorAll('section[id]')
+function getMobileLabel(mobileReady) {
+    if (!mobileReady || mobileReady.length === 0) return null;
+    if (mobileReady.includes('For Android') && mobileReady.includes('For IOS')) return '📱 iOS & Android';
+    if (mobileReady.includes('For Android')) return '📱 Android';
+    if (mobileReady.includes('For IOS')) return '📱 iOS';
+    return null;
+}
 
-function scrollActive() {
-    const scrollY = window.pageYOffset
-
-    sections.forEach(current => {
-        const sectionHeight = current.offsetHeight
-        const sectionTop = sectionTop = current.offsetTop - 50;
-        sectionId = current.getAttribute('id')
-
-        if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-            document.querySelector('.nav-menu a[href*=' + sectionId + ']').classList.add('active-link')
+/* ============================
+   LOAD GAMES JSON
+   ============================ */
+async function loadGames() {
+    try {
+        const res = await fetch('games.json');
+        const data = await res.json();
+        // Support both direct array and {segments: [...{hits:[...]}]} structure
+        if (Array.isArray(data)) {
+            allGames = data;
+        } else if (data.segments) {
+            allGames = data.segments.flatMap(s => s.hits || []);
+        } else if (data.hits) {
+            allGames = data.hits;
         } else {
-            document.querySelector('.nav-menu a[href*=' + sectionId + ']').classList.remove('active-link')
+            allGames = [];
         }
-    })
+
+        document.getElementById('game-count-display').textContent = `${allGames.length.toLocaleString()} games available`;
+        document.getElementById('stat-games').textContent = allGames.length.toLocaleString();
+
+        buildGenreFilters();
+        filterAndRender();
+        document.getElementById('loading-state').classList.add('hidden');
+    } catch (err) {
+        console.error('Failed to load games.json', err);
+        document.getElementById('loading-state').innerHTML = '<p style="color:#ff3d00">Failed to load game catalog.</p>';
+    }
 }
-window.addEventListener('scroll', scrollActive);
 
-/* --- Background Glow Follower --- */
-const glowBg = document.querySelector('.glow-bg');
-document.addEventListener('mousemove', (e) => {
-    const x = e.clientX;
-    const y = e.clientY;
-    
-    glowBg.style.left = `${x - 200}px`;
-    glowBg.style.top = `${y - 200}px`;
-});
+/* ============================
+   GENRE FILTERS
+   ============================ */
+function buildGenreFilters() {
+    const genreCounts = {};
+    allGames.forEach(game => {
+        (game.genres || []).forEach(g => {
+            genreCounts[g] = (genreCounts[g] || 0) + 1;
+        });
+    });
 
-/* --- Mobile Menu --- */
-const navToggle = document.getElementById('nav-toggle');
-const navMenu = document.querySelector('.nav-menu');
+    // Sort genres by popularity
+    const topGenres = Object.entries(genreCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, GENRE_LIMIT)
+        .map(([g]) => g);
 
-if(navToggle) {
-    navToggle.addEventListener('click', () => {
-        navMenu.classList.toggle('show-menu');
+    const container = document.getElementById('genre-filters');
+    topGenres.forEach(genre => {
+        const btn = document.createElement('button');
+        btn.className = 'genre-tag';
+        btn.dataset.genre = genre;
+        btn.textContent = genre.replace(/-/g, ' ');
+        btn.addEventListener('click', () => selectGenre(genre, btn));
+        container.appendChild(btn);
     });
 }
+
+function selectGenre(genre, btn) {
+    currentGenre = genre;
+    currentPage = 1;
+    document.querySelectorAll('.genre-tag').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterAndRender();
+}
+
+/* ============================
+   FILTER & RENDER
+   ============================ */
+function filterAndRender() {
+    const q = searchQuery.toLowerCase().trim();
+    filteredGames = allGames.filter(game => {
+        const matchGenre = currentGenre === 'all' || (game.genres || []).includes(currentGenre);
+        const matchSearch = !q ||
+            (game.title || '').toLowerCase().includes(q) ||
+            (game.description || '').toLowerCase().includes(q) ||
+            (game.genres || []).some(g => g.includes(q));
+        return matchGenre && matchSearch;
+    });
+
+    const countEl = document.getElementById('game-count-display');
+    if (q || currentGenre !== 'all') {
+        countEl.textContent = `${filteredGames.length.toLocaleString()} game${filteredGames.length !== 1 ? 's' : ''} found`;
+    } else {
+        countEl.textContent = `${allGames.length.toLocaleString()} games available`;
+    }
+
+    renderGrid();
+    renderPagination();
+
+    // Scroll to games section if filter was triggered after initial load
+    if (allGames.length > 0) {
+        document.getElementById('games-grid').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+/* ============================
+   RENDER GRID
+   ============================ */
+function renderGrid() {
+    const grid = document.getElementById('games-grid');
+    grid.innerHTML = '';
+
+    const start = (currentPage - 1) * GAMES_PER_PAGE;
+    const pageGames = filteredGames.slice(start, start + GAMES_PER_PAGE);
+
+    if (pageGames.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:4rem 0;font-size:1.1rem;">No games found. Try a different search.</div>';
+        return;
+    }
+
+    pageGames.forEach(game => {
+        const thumb = (game.images && game.images[0]) ? game.images[0] : 'assets/logo.png';
+        const genres = (game.genres || []).slice(0, 2);
+        const mobileLabel = getMobileLabel(game.mobileReady);
+        const hasPurchases = game.inGamePurchases === 'Yes';
+
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.innerHTML = `
+            <div class="game-thumb-wrap">
+                <img class="game-thumb" src="${thumb}" alt="${game.title}" loading="lazy" onerror="this.src='assets/logo.png'">
+                <div class="game-genres">
+                    ${genres.map(g => `<span class="game-genre-badge">${g.replace(/-/g,' ')}</span>`).join('')}
+                </div>
+                ${mobileLabel ? `<span class="mobile-badge">${mobileLabel}</span>` : ''}
+            </div>
+            <div class="game-info">
+                <h3 class="game-title">${game.title}</h3>
+                <p class="game-desc">${truncate(game.description, 90)}</p>
+                <button class="play-btn" data-slug="${game.slug}">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    Play Now
+                </button>
+            </div>
+        `;
+
+        card.querySelector('.play-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openModal(game);
+        });
+        card.addEventListener('click', () => openModal(game));
+        grid.appendChild(card);
+    });
+}
+
+/* ============================
+   PAGINATION
+   ============================ */
+function renderPagination() {
+    const container = document.getElementById('pagination');
+    container.innerHTML = '';
+    const totalPages = Math.ceil(filteredGames.length / GAMES_PER_PAGE);
+    if (totalPages <= 1) return;
+
+    const makeBtn = (label, page, cls = '') => {
+        const btn = document.createElement('button');
+        btn.className = `page-btn${cls ? ' ' + cls : ''}`;
+        btn.textContent = label;
+        if (cls !== 'ellipsis' && cls !== 'active') {
+            btn.addEventListener('click', () => {
+                currentPage = page;
+                renderGrid();
+                renderPagination();
+                document.getElementById('games').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+        return btn;
+    };
+
+    // Prev
+    if (currentPage > 1) {
+        container.appendChild(makeBtn('← Prev', currentPage - 1));
+    }
+
+    // Page numbers (smart truncated)
+    const pages = getPageNumbers(currentPage, totalPages);
+    pages.forEach(p => {
+        if (p === '…') {
+            container.appendChild(makeBtn('…', null, 'ellipsis'));
+        } else {
+            container.appendChild(makeBtn(p, p, p === currentPage ? 'active' : ''));
+        }
+    });
+
+    // Next
+    if (currentPage < totalPages) {
+        container.appendChild(makeBtn('Next →', currentPage + 1));
+    }
+}
+
+function getPageNumbers(current, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages = [1];
+    if (current > 3) pages.push('…');
+    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
+    if (current < total - 2) pages.push('…');
+    pages.push(total);
+    return pages;
+}
+
+/* ============================
+   PLAY MODAL
+   ============================ */
+function openModal(game) {
+    const modal = document.getElementById('play-modal');
+    const iframeWrap = document.getElementById('iframe-wrap');
+    document.getElementById('modal-game-title').textContent = game.title;
+
+    // Use the embed string if it contains valid iframe, else build from gameURL
+    let iframeSrc = game.gameURL || '';
+
+    // Inject iframe
+    iframeWrap.innerHTML = `
+        <iframe
+            src="${iframeSrc}"
+            allow="fullscreen; accelerometer; camera; clipboard-read; clipboard-write; screen-wake-lock; speaker-selection; web-share; geolocation; gyroscope; microphone; xr-spatial-tracking; autoplay; encrypted-media; picture-in-picture; payment; publickey-credentials-get; publickey-credentials-create; storage-access; attribution-reporting; browsing-topics"
+            frameborder="0"
+            allowfullscreen
+        ></iframe>
+    `;
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    const modal = document.getElementById('play-modal');
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+    // Clear iframe to stop game/audio
+    document.getElementById('iframe-wrap').innerHTML = '';
+}
+
+/* ============================
+   HEADER SCROLL
+   ============================ */
+function initScrollEffects() {
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 40) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
+    });
+}
+
+/* ============================
+   ACTIVE NAV LINK
+   ============================ */
+function initActiveNav() {
+    const links = document.querySelectorAll('.nav-link[data-section]');
+    const sections = ['home', 'games', 'about', 'contact'];
+
+    window.addEventListener('scroll', () => {
+        let current = 'home';
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && window.scrollY >= el.offsetTop - 150) current = id;
+        });
+        links.forEach(l => {
+            l.classList.toggle('active', l.dataset.section === current);
+        });
+    });
+}
+
+/* ============================
+   MOBILE MENU
+   ============================ */
+function initMobileMenu() {
+    const toggle = document.getElementById('nav-toggle');
+    const menu = document.getElementById('nav-menu');
+    toggle.addEventListener('click', () => menu.classList.toggle('open'));
+    menu.querySelectorAll('.nav-link').forEach(l => {
+        l.addEventListener('click', () => menu.classList.remove('open'));
+    });
+}
+
+/* ============================
+   SEARCH
+   ============================ */
+function initSearch() {
+    const input = document.getElementById('search-input');
+    let debounce;
+    input.addEventListener('input', () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+            searchQuery = input.value;
+            currentPage = 1;
+            filterAndRender();
+        }, 320);
+    });
+}
+
+/* ============================
+   MODAL CLOSE EVENTS
+   ============================ */
+function initModal() {
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('play-modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+}
+
+/* ============================
+   BROWSE BUTTON SMOOTH SCROLL
+   ============================ */
+function initHeroBtn() {
+    document.getElementById('browse-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('games').scrollIntoView({ behavior: 'smooth' });
+    });
+}
+
+/* ============================
+   INIT
+   ============================ */
+document.addEventListener('DOMContentLoaded', () => {
+    initScrollEffects();
+    initActiveNav();
+    initMobileMenu();
+    initSearch();
+    initModal();
+    initHeroBtn();
+
+    // Genre "All" button
+    document.querySelector('.genre-tag[data-genre="all"]').addEventListener('click', (e) => {
+        currentGenre = 'all';
+        currentPage = 1;
+        document.querySelectorAll('.genre-tag').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        filterAndRender();
+    });
+
+    loadGames();
+});
