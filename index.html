@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boogey Games | Jovany Nady - Game Developer Portfolio</title>
+    <meta name="description" content="Portfolio of Jovany Nady, a Game Developer creating fun and addictive 2D and 3D games published on Playgama.">
+    <meta name="keywords" content="Jovany Nady, Boogey Games, Game Developer, Unity, Playgama, Weapons Merge Hero, HoleMart, Endless Car Chase">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <header class="header" id="header">
+        <nav class="nav container">
+            <a href="#" class="logo">
+                <img src="assets/logo.png" alt="Boogey Games" class="nav-logo-img">
+            </a>
+            
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#games" class="nav-link">Games</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            
+            <div class="nav-toggle" id="nav-toggle">
+                <i data-lucide="menu"></i>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Home / Hero Section -->
+        <section class="hero section" id="home">
+            <div class="hero-container container">
+                <div class="hero-content">
+                    <h1 class="hero-title">Game Developer creating <span class="text-glow">fun and addictive</span> games</h1>
+                    <p class="hero-description">I'm Jovany Nady, building immersive gaming experiences using Unity and publishing them for the world to play.</p>
+                    <div class="hero-btns">
+                        <a href="#games" class="btn btn-primary">Browse Games</a>
+                        <a href="#about" class="btn btn-secondary">About Me</a>
+                    </div>
+                </div>
+                <!-- Logo Hero (Hidden on mobile if needed) -->
+                <div class="hero-img">
+                    <div class="logo-frame">
+                        <img src="assets/logo.png" alt="Boogey Games Logo" class="hero-logo-img">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Games Section -->
+        <section class="games section" id="games">
+            <div class="container">
+                <h2 class="section-title">Featured <span class="text-glow">Games</span></h2>
+                
+                <div class="games-grid">
+                    <!-- Game 1: Weapons Merge Hero -->
+                    <div class="game-card">
+                        <div class="game-img-wrapper">
+                            <img src="assets/weapons-merge.webp" alt="Weapons Merge Hero" class="game-img">
+                        </div>
+                        <div class="game-info">
+                            <h3 class="game-title">Weapons Merge Hero</h3>
+                            <p class="game-desc">Fast-paced 2D merge action game. Combine weapons and conquer!</p>
+                            <a href="https://playgama.com/en/game/65f46401-447a-4ef4-966a-1e479900c14c" target="_blank" class="btn btn-small">Play Now</a>
+                        </div>
+                    </div>
+
+                    <!-- Game 2: HoleMart -->
+                    <div class="game-card">
+                        <div class="game-img-wrapper">
+                            <img src="assets/holemart.webp" alt="HoleMart" class="game-img">
+                        </div>
+                        <div class="game-info">
+                            <h3 class="game-title">HoleMart</h3>
+                            <p class="game-desc">Collect items and build your mart in this addictive arcade game.</p>
+                            <a href="https://lagged.com/en/g/holemart" target="_blank" class="btn btn-small">Play Now</a>
+                        </div>
+                    </div>
+
+                    <!-- Game 3: Endless Car Chase -->
+                    <div class="game-card">
+                        <div class="game-img-wrapper">
+                            <img src="assets/car-chase.webp" alt="Endless Car Chase" class="game-img">
+                        </div>
+                        <div class="game-info">
+                            <h3 class="game-title">Endless Car Chase</h3>
+                            <p class="game-desc">Escape the police and survive as long as you can!</p>
+                            <a href="https://playgama.com/en/game/endless-car-chase-807" target="_blank" class="btn btn-small">Play Now</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about section" id="about">
+            <div class="container about-container">
+                <div class="about-content">
+                    <h2 class="section-title">About <span class="text-glow">Me</span></h2>
+                    <p class="about-text">
+                        I'm <strong>Jovany Nady</strong>, an IT Support specialist and game developer. I create 2D and 3D games using Unity and publish them on Playgama. 
+                        My focus is on creating engaging, high-performance web and mobile games that keep players coming back for more.
+                    </p>
+                    <div class="about-stats">
+                        <div class="stat">
+                            <span class="stat-num">5+</span>
+                            <span class="stat-label">Games Published</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-num">Unity</span>
+                            <span class="stat-label">Engine Primary</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact section" id="contact">
+            <div class="container">
+                <h2 class="section-title">Get in <span class="text-glow">Touch</span></h2>
+                <div class="contact-wrapper">
+                    <div class="contact-info">
+                        <p>Have a project in mind or want to collaborate? I'm always open to discussing new opportunities.</p>
+                        <div class="contact-details">
+                            <a href="mailto:jovany.nady@gmail.com" class="contact-item">
+                                <i data-lucide="mail"></i>
+                                <span>Email Me</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-container">
+            <p>&copy; 2024 Boogey Games | Jovany Nady. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="https://playgama.com" target="_blank" class="footer-link">Playgama Profile</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JS -->
+    <script src="main.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
