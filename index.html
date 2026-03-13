@@ -23,8 +23,8 @@
                 <img src="assets/logo.png" alt="Boogey Games" class="nav-logo-img">
             </a>
             <ul class="nav-menu" id="nav-menu">
-                <li><a href="#home" class="nav-link active" data-section="home">Home</a></li>
-                <li><a href="#games" class="nav-link" data-section="games">Games</a></li>
+                <li><a href="#games" class="nav-link active" data-section="games">Games</a></li>
+                <li><a href="#home" class="nav-link" data-section="home">About Me</a></li>
                 <li><a href="#about" class="nav-link" data-section="about">About</a></li>
                 <li><a href="#contact" class="nav-link" data-section="contact">Contact</a></li>
             </ul>
@@ -34,30 +34,7 @@
         </nav>
     </header>
 
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="hero-inner container">
-            <div class="hero-content">
-                <p class="hero-tag">💀 Play. Fear. Conquer.</p>
-                <h1 class="hero-title">Your Gateway to<br><span class="text-glow">1000+ Free Games</span></h1>
-                <p class="hero-sub">Game Developer creating fun and addictive games. Browse the full Playgama catalog — arcade, action, puzzle, racing and more.</p>
-                <div class="hero-actions">
-                    <a href="#games" class="btn btn-primary" id="browse-btn">Browse Games</a>
-                    <a href="#about" class="btn btn-ghost">About Me</a>
-                </div>
-            </div>
-            <div class="hero-logo-wrap">
-                <div class="hero-logo-ring">
-                    <img src="assets/logo.png" alt="Boogey Games Logo" class="hero-logo-img">
-                </div>
-            </div>
-        </div>
-        <div class="hero-scroll-hint">
-            <div class="scroll-arrow"></div>
-        </div>
-    </section>
-
-    <!-- Games Section -->
+    <!-- Games Section (First) -->
     <section class="games-section" id="games">
         <div class="container">
             <div class="section-header">
@@ -87,6 +64,26 @@
 
             <!-- Pagination -->
             <div class="pagination" id="pagination"></div>
+        </div>
+    </section>
+
+    <!-- Hero / Intro Section (After Games) -->
+    <section class="hero" id="home">
+        <div class="hero-inner container">
+            <div class="hero-content">
+                <p class="hero-tag">💀 Play. Fear. Conquer.</p>
+                <h1 class="hero-title">Your Gateway to<br><span class="text-glow">1000+ Free Games</span></h1>
+                <p class="hero-sub">Game Developer creating fun and addictive games. Browse the full Playgama catalog — arcade, action, puzzle, racing and more.</p>
+                <div class="hero-actions">
+                    <a href="#games" class="btn btn-primary" id="browse-btn">Browse Games</a>
+                    <a href="#about" class="btn btn-ghost">About Me</a>
+                </div>
+            </div>
+            <div class="hero-logo-wrap">
+                <div class="hero-logo-ring">
+                    <img src="assets/logo.png" alt="Boogey Games Logo" class="hero-logo-img">
+                </div>
+            </div>
         </div>
     </section>
 
@@ -164,7 +161,14 @@
         <div class="modal">
             <div class="modal-header">
                 <h3 class="modal-title" id="modal-game-title">Game Title</h3>
-                <button class="modal-close" id="modal-close">&times;</button>
+                <div class="modal-actions">
+                    <!-- Fullscreen Toggle -->
+                    <button class="modal-btn" id="modal-fullscreen" title="Toggle Fullscreen">
+                        <svg id="fs-expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+                        <svg id="fs-shrink-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="display:none"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+                    </button>
+                    <button class="modal-btn modal-close" id="modal-close" title="Close">&times;</button>
+                </div>
             </div>
             <div class="modal-body">
                 <div class="iframe-wrap" id="iframe-wrap">

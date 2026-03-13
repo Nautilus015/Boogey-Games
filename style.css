@@ -366,9 +366,47 @@ button { cursor: pointer; font-family: var(--font-body); }
 .game-thumb {
     width: 100%; height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.5s ease, opacity 0.3s ease;
+    position: relative; z-index: 1;
 }
-.game-card:hover .game-thumb { transform: scale(1.08); }
+.game-thumb.hidden { opacity: 0; }
+.game-card:hover .game-thumb:not(.hidden) { transform: scale(1.08); }
+
+/* Video GIF Preview */
+.game-video-preview {
+    position: absolute; inset: 0; z-index: 2;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+}
+.game-video-preview.visible { opacity: 1; }
+
+/* Play hint overlay */
+.video-play-hint {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    width: 52px; height: 52px;
+    background: rgba(0,0,0,0.65);
+    border: 2px solid var(--green);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--green);
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    box-shadow: 0 0 20px var(--green-glow);
+}
+.video-play-hint.visible {
+    opacity: 1;
+    animation: hint-pulse 1.5s ease-in-out infinite;
+}
+@keyframes hint-pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+}
 
 /* Genres overlay */
 .game-genres {
@@ -584,14 +622,20 @@ button { cursor: pointer; font-family: var(--font-body); }
     text-transform: uppercase; letter-spacing: 1px;
     color: var(--green);
 }
-.modal-close {
+/* Modal action buttons (close + fullscreen) */
+.modal-actions {
+    display: flex; align-items: center; gap: 0.5rem;
+}
+.modal-btn {
     background: none; border: none; color: var(--muted);
-    font-size: 1.8rem; line-height: 1;
     width: 36px; height: 36px;
     display: flex; align-items: center; justify-content: center;
     border-radius: 6px; transition: var(--t);
+    font-size: 1.5rem; line-height: 1;
 }
-.modal-close:hover { color: var(--green); background: var(--green-dim); }
+.modal-btn:hover { color: var(--green); background: var(--green-dim); }
+.modal-btn#modal-fullscreen { color: var(--muted); }
+.modal-btn#modal-fullscreen:hover { color: var(--green); }
 .modal-body { flex: 1; overflow: hidden; }
 .iframe-wrap {
     width: 100%; height: 100%;
@@ -601,6 +645,31 @@ button { cursor: pointer; font-family: var(--font-body); }
     width: 100%; height: 100%;
     border: none; display: block;
     min-height: 450px;
+}
+
+/* Fullscreen mode: stretch modal to fill */
+.modal-overlay:fullscreen,
+.modal-overlay:-webkit-full-screen,
+.modal-overlay:-moz-full-screen {
+    padding: 0;
+    background: #000;
+}
+.modal-overlay:fullscreen .modal,
+.modal-overlay:-webkit-full-screen .modal,
+.modal-overlay:-moz-full-screen .modal {
+    max-width: 100%; max-height: 100%;
+    width: 100%; height: 100%;
+    border-radius: 0; border: none;
+}
+.modal-overlay:fullscreen .iframe-wrap,
+.modal-overlay:-webkit-full-screen .iframe-wrap,
+.modal-overlay:-moz-full-screen .iframe-wrap {
+    min-height: calc(100vh - 60px);
+}
+.modal-overlay:fullscreen .iframe-wrap iframe,
+.modal-overlay:-webkit-full-screen .iframe-wrap iframe,
+.modal-overlay:-moz-full-screen .iframe-wrap iframe {
+    min-height: calc(100vh - 60px);
 }
 
 /* ============================

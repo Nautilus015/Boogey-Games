@@ -143,13 +143,17 @@ function renderGrid() {
         const thumb = (game.images && game.images[0]) ? game.images[0] : 'assets/logo.png';
         const genres = (game.genres || []).slice(0, 2);
         const mobileLabel = getMobileLabel(game.mobileReady);
-        const hasPurchases = game.inGamePurchases === 'Yes';
+        // Cloudflare Stream animated GIF for video preview
+        const videoId = (game.videos && game.videos[0] && game.videos[0].playgama_id) ? game.videos[0].playgama_id : null;
+        const videoGifUrl = videoId ? `https://videodelivery.net/${videoId}/thumbnails/thumbnail.gif?time=1s&height=300` : null;
 
         const card = document.createElement('div');
         card.className = 'game-card';
         card.innerHTML = `
             <div class="game-thumb-wrap">
                 <img class="game-thumb" src="${thumb}" alt="${game.title}" loading="lazy" onerror="this.src='assets/logo.png'">
+                ${videoGifUrl ? `<img class="game-video-preview" src="" data-src="${videoGifUrl}" alt="${game.title} preview">` : ''}
+                <div class="video-play-hint"><svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
                 <div class="game-genres">
                     ${genres.map(g => `<span class="game-genre-badge">${g.replace(/-/g,' ')}</span>`).join('')}
                 </div>
@@ -164,6 +168,29 @@ function renderGrid() {
                 </button>
             </div>
         `;
+
+        // Video hover preview
+        if (videoGifUrl) {
+            const videoPreviewEl = card.querySelector('.game-video-preview');
+            const thumbEl = card.querySelector('.game-thumb');
+            const hintEl = card.querySelector('.video-play-hint');
+            let loaded = false;
+
+            card.addEventListener('mouseenter', () => {
+                if (!loaded) {
+                    videoPreviewEl.src = videoPreviewEl.dataset.src; // lazy-load on first hover
+                    loaded = true;
+                }
+                videoPreviewEl.classList.add('visible');
+                thumbEl.classList.add('hidden');
+                hintEl.classList.add('visible');
+            });
+            card.addEventListener('mouseleave', () => {
+                videoPreviewEl.classList.remove('visible');
+                thumbEl.classList.remove('hidden');
+                hintEl.classList.remove('visible');
+            });
+        }
 
         card.querySelector('.play-btn').addEventListener('click', (e) => {
             e.stopPropagation();
@@ -254,12 +281,54 @@ function openModal(game) {
     document.body.style.overflow = 'hidden';
 }
 
+/* ============================
+   FULLSCREEN
+   ============================ */
+function toggleFullscreen() {
+    const modal = document.getElementById('play-modal');
+    const expandIcon = document.getElementById('fs-expand-icon');
+    const shrinkIcon = document.getElementById('fs-shrink-icon');
+
+    if (!document.fullscreenElement) {
+        modal.requestFullscreen().then(() => {
+            expandIcon.style.display = 'none';
+            shrinkIcon.style.display = '';
+        }).catch(err => console.warn('Fullscreen error:', err));
+    } else {
+        document.exitFullscreen().then(() => {
+            expandIcon.style.display = '';
+            shrinkIcon.style.display = 'none';
+        });
+    }
+}
+
+// Handle external fullscreen exit (e.g. Escape key by browser)
+document.addEventListener('fullscreenchange', () => {
+    const expandIcon = document.getElementById('fs-expand-icon');
+    const shrinkIcon = document.getElementById('fs-shrink-icon');
+    if (expandIcon && shrinkIcon) {
+        if (!document.fullscreenElement) {
+            expandIcon.style.display = '';
+            shrinkIcon.style.display = 'none';
+        }
+    }
+});
+
 function closeModal() {
+    // Exit fullscreen first if active
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    }
     const modal = document.getElementById('play-modal');
     modal.classList.remove('open');
     document.body.style.overflow = '';
     // Clear iframe to stop game/audio
     document.getElementById('iframe-wrap').innerHTML = '';
+    // Reset fullscreen icons
+    const expandIcon = document.getElementById('fs-expand-icon');
+    const shrinkIcon = document.getElementById('fs-shrink-icon');
+    if (expandIcon) expandIcon.style.display = '';
+    if (shrinkIcon) shrinkIcon.style.display = 'none';
 }
 
 /* ============================
@@ -278,10 +347,11 @@ function initScrollEffects() {
    ============================ */
 function initActiveNav() {
     const links = document.querySelectorAll('.nav-link[data-section]');
-    const sections = ['home', 'games', 'about', 'contact'];
+    // New order: games first, then home (intro), about, contact
+    const sections = ['games', 'home', 'about', 'contact'];
 
     window.addEventListener('scroll', () => {
-        let current = 'home';
+        let current = 'games';
         sections.forEach(id => {
             const el = document.getElementById(id);
             if (el && window.scrollY >= el.offsetTop - 150) current = id;
@@ -325,11 +395,12 @@ function initSearch() {
    ============================ */
 function initModal() {
     document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('modal-fullscreen').addEventListener('click', toggleFullscreen);
     document.getElementById('play-modal').addEventListener('click', (e) => {
         if (e.target === e.currentTarget) closeModal();
     });
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeModal();
+        if (e.key === 'Escape' && !document.fullscreenElement) closeModal();
     });
 }
 
