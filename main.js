@@ -285,46 +285,49 @@ function openModal(game) {
    FULLSCREEN
    ============================ */
 function toggleFullscreen() {
-    const modal = document.getElementById('play-modal');
     const expandIcon = document.getElementById('fs-expand-icon');
     const shrinkIcon = document.getElementById('fs-shrink-icon');
 
     if (!document.fullscreenElement) {
-        modal.requestFullscreen().then(() => {
-            expandIcon.style.display = 'none';
-            shrinkIcon.style.display = '';
-        }).catch(err => console.warn('Fullscreen error:', err));
+        // Target the iframe directly so only the game fills the screen
+        const iframe = document.querySelector('#iframe-wrap iframe');
+        if (!iframe) return;
+        const req = iframe.requestFullscreen ||
+                    iframe.webkitRequestFullscreen ||
+                    iframe.mozRequestFullScreen ||
+                    iframe.msRequestFullscreen;
+        if (req) req.call(iframe);
     } else {
-        document.exitFullscreen().then(() => {
-            expandIcon.style.display = '';
-            shrinkIcon.style.display = 'none';
-        });
+        const exit = document.exitFullscreen ||
+                     document.webkitExitFullscreen ||
+                     document.mozCancelFullScreen ||
+                     document.msExitFullscreen;
+        if (exit) exit.call(document);
     }
 }
 
-// Handle external fullscreen exit (e.g. Escape key by browser)
+// Sync icon state when fullscreen changes (including browser Escape key)
 document.addEventListener('fullscreenchange', () => {
     const expandIcon = document.getElementById('fs-expand-icon');
     const shrinkIcon = document.getElementById('fs-shrink-icon');
-    if (expandIcon && shrinkIcon) {
-        if (!document.fullscreenElement) {
-            expandIcon.style.display = '';
-            shrinkIcon.style.display = 'none';
-        }
+    if (!expandIcon || !shrinkIcon) return;
+    if (document.fullscreenElement) {
+        expandIcon.style.display = 'none';
+        shrinkIcon.style.display = '';
+    } else {
+        expandIcon.style.display = '';
+        shrinkIcon.style.display = 'none';
     }
 });
 
 function closeModal() {
-    // Exit fullscreen first if active
     if (document.fullscreenElement) {
         document.exitFullscreen();
     }
     const modal = document.getElementById('play-modal');
     modal.classList.remove('open');
     document.body.style.overflow = '';
-    // Clear iframe to stop game/audio
     document.getElementById('iframe-wrap').innerHTML = '';
-    // Reset fullscreen icons
     const expandIcon = document.getElementById('fs-expand-icon');
     const shrinkIcon = document.getElementById('fs-shrink-icon');
     if (expandIcon) expandIcon.style.display = '';
